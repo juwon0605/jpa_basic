@@ -1,7 +1,5 @@
 package com.basic.jpa;
 
-import java.util.List;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -18,15 +16,15 @@ public class JpaMain {
 		tx.begin();
 
 		try {
-			// Member findMember = em.find(Member.class, 2L);
-			List<Member> result = em.createQuery("select m from Member as m", Member.class)
-				.setFirstResult(5)
-				.setMaxResults(8)
-				.getResultList();
+			//비영속
+			Member member = new Member();
+			member.setId(100L);
+			member.setName("HelloJPA");
 
-			for (Member member : result) {
-				System.out.println("member.getName() = " + member.getName());
-			}
+			//영속
+			System.out.println("=== BEFORE ===");
+			em.persist(member);
+			System.out.println("=== AFTER ===");
 
 			tx.commit();
 		} catch (Exception e) {
