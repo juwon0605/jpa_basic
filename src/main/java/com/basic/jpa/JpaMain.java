@@ -16,17 +16,7 @@ public class JpaMain {
 		tx.begin();
 
 		try {
-			//영속
-			Member member = em.find(Member.class, 150L);
-			member.setName("AAAAA");
-
-			em.detach(member); //ZZZZZ에서 AAAAA로 업데이트 되지 않음
-			// em.clear(); // 영속성 컨텍스트 초기화
-			// em.clear(); // 영속성 컨텍스트 종료
-
-			Member member2 = em.find(Member.class, 150L);
-
-			System.out.println("=====================");
+			
 			tx.commit();
 		} catch (Exception e) {
 			tx.rollback();
