@@ -1,11 +1,12 @@
 package jpabook.jpashop.domain;
 
+import static javax.persistence.FetchType.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -27,7 +28,7 @@ public class Member extends BaseEntity {
 
 	private String name;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = LAZY)
 	@JoinColumn(name = "TEAM_ID")
 	private Team team;
 
