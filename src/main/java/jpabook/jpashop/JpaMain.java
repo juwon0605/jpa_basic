@@ -6,6 +6,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import jpabook.jpashop.domain.Address;
+import jpabook.jpashop.domain.AddressEntity;
 import jpabook.jpashop.domain.Member;
 
 public class JpaMain {
@@ -19,30 +20,77 @@ public class JpaMain {
 		tx.begin();
 
 		try {
-			Address address = new Address("city", "street", "10000");
+			Member member = new Member();
+			member.setName("member");
+			member.setAddress(new Address("homeCity", "street", "10000"));
 
-			Member member1 = new Member();
-			member1.setName("member1");
-			member1.setAddress(address);
+			member.getFavoriteFoods().add("치킨");
+			member.getFavoriteFoods().add("족발");
+			member.getFavoriteFoods().add("피자");
 
-			Member member2 = new Member();
-			member2.setName("member2");
-			member2.setAddress(address);
+			member.getAddressHistory().add(new AddressEntity("old1", "street", "10000"));
+			member.getAddressHistory().add(new AddressEntity("old2", "street", "10000"));
 
-			Member member3 = new Member();
-			member3.setName("member3");
-			member3.setAddress(new Address(address.getCity(), address.getStreet(), address.getZipcode()));
+			em.persist(member);
+			//영속성 전의(Cascade) + 고아 객체 제거 기능으로 인해 별도로 persist하거나 관리할 필요가 없다
 
-			member1.getAddress().setCity("newCity");
+			em.flush();
+			em.clear();
 
-			System.out.println("member1.getAddress().getCity() = " + member1.getAddress().getCity());
-			// member1.getAddress().getCity() = newCity
+			System.out.println("========================");
+			Member findMember = em.find(Member.class, member.getId());
+			System.out.println("========================");
+			// @OneToMany는 디폴트로 지연 로딩된다
 
-			System.out.println("member2.getAddress().getCity() = " + member2.getAddress().getCity());
-			// member2.getAddress().getCity() = newCity
+			// 일대다 엔티티 수정
 
-			System.out.println("member3.getAddress().getCity() = " + member3.getAddress().getCity());
-			// member3.getAddress().getCity() = city
+			// 치킨 -> 한식
+			findMember.getFavoriteFoods().remove("치킨");
+			findMember.getFavoriteFoods().add("한식");
+			/*
+			Hibernate:
+			delete collection row jpabook.jpashop.domain.Member.favoriteFoods
+				delete
+				from
+					FAVORITE_FOOD
+				where
+					MEMBER_ID=?
+					and FOOD_NAME=?
+			 */
+			/*
+			Hibernate:
+			insert collection row jpabook.jpashop.domain.Member.favoriteFoods
+				insert
+				into
+					FAVORITE_FOOD
+					(MEMBER_ID, FOOD_NAME)
+				values
+					(?, ?)
+			 */
+
+			// old1 -> newCity
+			findMember.getAddressHistory().remove(new AddressEntity("old1", "street", "10000"));
+			findMember.getAddressHistory().add(new AddressEntity("newCity", "street", "10000"));
+			/*
+			Hibernate:
+			insert jpabook.jpashop.domain.AddressEntity
+				insert
+				into
+				ADDRESS
+					(city, street, zipcode, id)
+				values
+					(?, ?, ?, ?)
+			 */
+			/*
+			Hibernate:
+			create one-to-many row jpabook.jpashop.domain.Member.addressHistory
+				update
+					ADDRESS
+				set
+					MEMBER_ID=?
+				where
+					id=?
+			 */
 
 			tx.commit();
 		} catch (Exception e) {
