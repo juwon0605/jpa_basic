@@ -5,8 +5,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
-import jpabook.jpashop.domain.Child;
-import jpabook.jpashop.domain.Parent;
+import jpabook.jpashop.domain.Address;
+import jpabook.jpashop.domain.Member;
 
 public class JpaMain {
 
@@ -19,33 +19,30 @@ public class JpaMain {
 		tx.begin();
 
 		try {
-			Child child1 = new Child();
-			Child child2 = new Child();
+			Address address = new Address("city", "street", "10000");
 
-			Parent parent = new Parent();
-			parent.addChild(child1);
-			parent.addChild(child2);
+			Member member1 = new Member();
+			member1.setName("member1");
+			member1.setAddress(address);
 
-			em.persist(parent);
-			// em.persist(child1); // -> CascadeType.ALL로 생략 가능
-			// em.persist(child2); // -> CascadeType.ALL로 생략 가능
+			Member member2 = new Member();
+			member2.setName("member2");
+			member2.setAddress(address);
 
-			em.flush();
-			em.clear();
+			Member member3 = new Member();
+			member3.setName("member3");
+			member3.setAddress(new Address(address.getCity(), address.getStreet(), address.getZipcode()));
 
-			Parent findParent = em.find(Parent.class, parent.getId());
+			member1.getAddress().setCity("newCity");
 
-			// Child findChild1 = em.find(Child.class, findParent.getChildList().get(0).getId());
-			// em.remove(findChild1); // -> orphanRemoval = true로 생략 가능
+			System.out.println("member1.getAddress().getCity() = " + member1.getAddress().getCity());
+			// member1.getAddress().getCity() = newCity
 
-			// findParent.getChildList().remove(0); // ->  orphanRemoval = true로 사용 가능
+			System.out.println("member2.getAddress().getCity() = " + member2.getAddress().getCity());
+			// member2.getAddress().getCity() = newCity
 
-			// Child findChild2 = em.find(Child.class, findParent.getChildList().get(1).getId());
-			// em.remove(findChild2); // -> orphanRemoval = true
-
-			// findParent.getChildList().remove(1); // ->  orphanRemoval = true로 사용 가능(연관관계의 주인이 아니어도 동작 함)
-
-			em.remove(findParent);
+			System.out.println("member3.getAddress().getCity() = " + member3.getAddress().getCity());
+			// member3.getAddress().getCity() = city
 
 			tx.commit();
 		} catch (Exception e) {
