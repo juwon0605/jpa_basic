@@ -41,6 +41,11 @@ public class Member extends BaseEntity {
 	@OneToMany(mappedBy = "member")
 	private List<Order> orders = new ArrayList<>();
 
+	public void changeTeam(Team team) {
+		this.team = team;
+		team.getMembers().add(this);
+	}
+
 	@Override
 	public String toString() {
 		return "Member{" +
