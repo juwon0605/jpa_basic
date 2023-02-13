@@ -8,7 +8,6 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import jpabook.jpashop.domain.Member;
-import jpabook.jpashop.dto.MemberDTO;
 
 public class JpaMain {
 
@@ -21,37 +20,39 @@ public class JpaMain {
 		tx.begin();
 
 		try {
-			Member member = new Member();
-			member.setName("member");
-			member.setAge(29);
-			em.persist(member);
+			for (int i = 0; i < 100; ++i) {
+				Member member = new Member();
+				member.setName("member" + i);
+				member.setAge(i);
+				em.persist(member);
+			}
 
-			//
-			List resultList1 = em.createQuery("select m.name, m.age from Member m")
+			em.flush();
+			em.clear();
+
+			List<Member> result = em.createQuery("select m from Member m order by m.age desc", Member.class)
+				.setFirstResult(1)
+				.setMaxResults(10)
 				.getResultList();
 
-			Object o = resultList1.get(0);
-			Object[] result1 = (Object[])o;
-			System.out.println("username = " + result1[0]); // username = member
-			System.out.println("age = " + result1[1]); // age = 29
+			System.out.println("result.size() = " + result.size());
+			// result.size() = 10
 
-			//
-			List<Object[]> resultList2 = em.createQuery("select m.name, m.age from Member m")
-				.getResultList();
-
-			Object[] result2 = (Object[])o;
-			System.out.println("username = " + result2[0]); // username = member
-			System.out.println("age = " + result2[1]); // age = 29
-
-			//
-			List<MemberDTO> resultList3 = em.createQuery(
-					"select new jpabook.jpashop.dto.MemberDTO(m.name, m.age) from Member m",
-					MemberDTO.class)
-				.getResultList();
-
-			MemberDTO memberDTO = resultList3.get(0);
-			System.out.println("username = " + memberDTO.getName()); // username = member
-			System.out.println("age = " + memberDTO.getAge()); // age = 29
+			for (Member member : result) {
+				System.out.println("member = " + member);
+			}
+			/*
+			member = Member{id=99, name='member98', age=98}
+			member = Member{id=98, name='member97', age=97}
+			member = Member{id=97, name='member96', age=96}
+			member = Member{id=96, name='member95', age=95}
+			member = Member{id=95, name='member94', age=94}
+			member = Member{id=94, name='member93', age=93}
+			member = Member{id=93, name='member92', age=92}
+			member = Member{id=92, name='member91', age=91}
+			member = Member{id=91, name='member90', age=90}
+			member = Member{id=90, name='member89', age=89}
+			 */
 
 			tx.commit();
 		} catch (Exception e) {
