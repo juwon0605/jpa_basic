@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -33,9 +34,18 @@ public class Order extends BaseEntity {
 	@Column(name = "ORDER_ID")
 	private Long id;
 
+	private int orderAmount;
+
 	@ManyToOne(fetch = LAZY)
 	@JoinColumn(name = "MEMBER_ID")
 	private Member member;
+
+	@Embedded
+	private Address address;
+
+	@ManyToOne
+	@JoinColumn(name = "PRODUCT_ID")
+	private Product product;
 
 	@OneToMany(mappedBy = "order", cascade = ALL)
 	private List<OrderItem> orderItems = new ArrayList<>();
