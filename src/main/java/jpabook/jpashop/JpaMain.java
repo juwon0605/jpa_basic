@@ -7,8 +7,6 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
-import jpabook.jpashop.domain.Book;
-import jpabook.jpashop.domain.Item;
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.MemberType;
 import jpabook.jpashop.domain.Team;
@@ -29,48 +27,36 @@ public class JpaMain {
 			em.persist(team);
 
 			Member member = new Member();
-			member.setName("teamA");
+			// member.setName(null);
+			member.setName("관리자");
 			member.setAge(29);
 			member.setType(MemberType.ADMIN);
-			member.setTeam(team);
-
 			em.persist(member);
 
 			em.flush();
 			em.clear();
 
 			String query1 =
-				"select m.name, 'HELLO', true " +
-					"from Member m " +
-					"where m.type = :userType and m.age between 20 and 29";
+				"	 select " +
+					"	case when m.age <= 19 then '학생요금' " +
+					"		 when m.age >= 60 then '경로요금' " +
+					"		 else '일반요금'" +
+					"	end " +
+					"from Member m";
+			// s = 일반요금
 
-			List<Object[]> result1 = em.createQuery(query1)
-				.setParameter("userType", MemberType.ADMIN)
+			String query2 = "select coalesce(m.name, '이름 없는 회원') from Member m";
+			// s = 이름 없는 회원
+
+			String query3 = "select nullif(m.name, '관리자') from Member m";
+			// s = 관리자2
+
+			List<String> result1 = em.createQuery(query3, String.class)
 				.getResultList();
 
-			for (Object[] objects : result1) {
-				for (Object object : objects) {
-					System.out.println("object = " + object);
-				}
+			for (String s : result1) {
+				System.out.println("s = " + s);
 			}
-			// object = teamA
-			// object = HELLO
-			// object = true
-
-			Book book = new Book();
-			book.setName("JPA");
-			book.setAuthor("김영한");
-			em.persist(book);
-
-			String query2 = "select i from Item i where type(i) = Book";
-
-			List<Item> result2 = em.createQuery(query2, Item.class)
-				.getResultList();
-
-			for (Item item : result2) {
-				System.out.println("item.getName() = " + item.getName());
-			}
-			// item.getName() = JPA
 
 			tx.commit();
 		} catch (Exception e) {
