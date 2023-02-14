@@ -38,30 +38,104 @@ public class JpaMain {
 			em.flush();
 			em.clear();
 
-			String query1 = "select 'a' || 'b' from Member m";
-			String query2 = "select concat('a', 'b') from Member m";
-			// s = ab
-			// s = ab
+			//1.경로 표현식 - 상태 필드
 
-			String query3 = "select substring(m.name, 0, 2) from Member m";
-			// s = 관리
-			// s = 관리
+			String query1 = "select m.name from Member m";
+			// s = 관리자1
+			// s = 관리자2
 
-			String query4 = "select locate('de', 'abcdefg') from Member m";
-			// s = 4
-			// s = 4
+			//2.경로 표현식 - 단일 값 연관 경로
 
-			String query5 = "select size(t.members) From Team t";
+			// 묵시적 내부 조인(inner join) 발생
+			String query2 = "select m.team.name from Member m";
+			// s = team
+			// s = team
+			/*
+			Hibernate:
+			select
+				team1_.name as col_0_0_
+			from
+				Member member0_ cross
+			join
+				Team team1_
+			where
+				member0_.TEAM_ID=team1_.id
+			 */
+
+			// join 튜닝 등의 이유로 파악하기 쉽게 명시적으로 표현
+			String query3 = "select t.name from Member m join m.team t";
+			// s = team
+			// s = team
+			/*
+			Hibernate:
+			select
+				team1_.name as col_0_0_
+			from
+				Member member0_
+			inner join
+				Team team1_
+			on
+				member0_.TEAM_ID=team1_.id
+			*/
+
+			//3.경로 표현식 - 컬렉션 값 연관 경로
+
+			// 컬렉션 자체를 가리키기 때문에 탐색이 안 됨.
+			// 읽기나 사이즈 정도만 사용 가능
+			String query4 = "select t.members from Team t";
+			// s = Member{id=2, name='관리자1', age=0}
+			// s = Member{id=3, name='관리자2', age=0}
+			/*
+			Hibernate:
+			select
+				members1_.MEMBER_ID as member_i1_6_,
+				members1_.city as city6_6_,
+				members1_.street as street7_6_,
+				members1_.zipcode as zipcode8_6_,
+				members1_.age as age9_6_,
+				members1_.name as name10_6_,
+				members1_.TEAM_ID as team_id12_6_,
+				members1_.type as type11_6_
+			from
+				Team team0_
+			inner join
+				Member members1_
+			on
+				team0_.id=members1_.TEAM_ID
+			*/
+
+			String query5 = "select t.members.size from Team t";
 			// s = 2
+			/*
+			Hibernate:
+			select
+				(select
+					count(members1_.TEAM_ID)
+				 from
+					Member members1_
+				 where
+					team0_.id=members1_.TEAM_ID) as col_0_0_
+			from
+				Team team0_
+			 */
 
-			String query6 = "select index(t.members) From Team t";
-			// s = 0
+			// 명시적 join으로 별칭을 줘서 값을 탐색할 수 있다
+			String query6 = "select m.name from Team t join t.members m";
+			// s = 관리자1
+			// s = 관리자2
+			/*
+			Hibernate:
+			select
+				members1_.name as col_0_0_
+			from
+				Team team0_
+			inner join
+				Member members1_
+			on
+				team0_.id=members1_.TEAM_ID
+			*/
 
-			// 사용자 정의 함수 호출
-			String query7 = "select group_concat(m.name) From Member m";
-			// s = 관리자1,관리자2
-
-			List<String> result1 = em.createQuery(query7, String.class)
+			List<String> result1 = em.createQuery(query6, String.class)
 				.getResultList();
 
 			for (String s : result1) {
