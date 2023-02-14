@@ -8,7 +8,6 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import jpabook.jpashop.domain.Member;
-import jpabook.jpashop.domain.MemberType;
 import jpabook.jpashop.domain.Team;
 
 public class JpaMain {
@@ -23,35 +22,46 @@ public class JpaMain {
 
 		try {
 			Team team = new Team();
-			team.setName("teamA");
+			team.setName("team");
 			em.persist(team);
 
-			Member member = new Member();
-			// member.setName(null);
-			member.setName("관리자");
-			member.setAge(29);
-			member.setType(MemberType.ADMIN);
-			em.persist(member);
+			Member member1 = new Member();
+			member1.setName("관리자1");
+			member1.changeTeam(team);
+			em.persist(member1);
+
+			Member member2 = new Member();
+			member2.setName("관리자2");
+			member2.changeTeam(team);
+			em.persist(member2);
 
 			em.flush();
 			em.clear();
 
-			String query1 =
-				"	 select " +
-					"	case when m.age <= 19 then '학생요금' " +
-					"		 when m.age >= 60 then '경로요금' " +
-					"		 else '일반요금'" +
-					"	end " +
-					"from Member m";
-			// s = 일반요금
+			String query1 = "select 'a' || 'b' from Member m";
+			String query2 = "select concat('a', 'b') from Member m";
+			// s = ab
+			// s = ab
 
-			String query2 = "select coalesce(m.name, '이름 없는 회원') from Member m";
-			// s = 이름 없는 회원
+			String query3 = "select substring(m.name, 0, 2) from Member m";
+			// s = 관리
+			// s = 관리
 
-			String query3 = "select nullif(m.name, '관리자') from Member m";
-			// s = 관리자2
+			String query4 = "select locate('de', 'abcdefg') from Member m";
+			// s = 4
+			// s = 4
 
-			List<String> result1 = em.createQuery(query3, String.class)
+			String query5 = "select size(t.members) From Team t";
+			// s = 2
+
+			String query6 = "select index(t.members) From Team t";
+			// s = 0
+
+			// 사용자 정의 함수 호출
+			String query7 = "select group_concat(m.name) From Member m";
+			// s = 관리자1,관리자2
+
+			List<String> result1 = em.createQuery(query7, String.class)
 				.getResultList();
 
 			for (String s : result1) {
