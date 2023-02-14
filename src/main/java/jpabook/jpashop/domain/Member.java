@@ -8,6 +8,8 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -30,6 +32,9 @@ public class Member extends BaseEntity {
 	private String name;
 
 	private int age;
+
+	@Enumerated(EnumType.STRING)
+	private MemberType type;
 
 	@ManyToOne(fetch = LAZY)
 	@JoinColumn(name = "TEAM_ID")

@@ -8,6 +8,8 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import jpabook.jpashop.domain.Member;
+import jpabook.jpashop.domain.MemberType;
+import jpabook.jpashop.domain.Team;
 
 public class JpaMain {
 
@@ -20,39 +22,41 @@ public class JpaMain {
 		tx.begin();
 
 		try {
-			for (int i = 0; i < 100; ++i) {
-				Member member = new Member();
-				member.setName("member" + i);
-				member.setAge(i);
-				em.persist(member);
-			}
+			Team team = new Team();
+			team.setName("teamA");
+			em.persist(team);
+
+			Member member = new Member();
+			// member.setName(null);
+			member.setName("관리자");
+			member.setAge(29);
+			member.setType(MemberType.ADMIN);
+			em.persist(member);
 
 			em.flush();
 			em.clear();
 
-			List<Member> result = em.createQuery("select m from Member m order by m.age desc", Member.class)
-				.setFirstResult(1)
-				.setMaxResults(10)
+			String query1 =
+				"	 select " +
+					"	case when m.age <= 19 then '학생요금' " +
+					"		 when m.age >= 60 then '경로요금' " +
+					"		 else '일반요금'" +
+					"	end " +
+					"from Member m";
+			// s = 일반요금
+
+			String query2 = "select coalesce(m.name, '이름 없는 회원') from Member m";
+			// s = 이름 없는 회원
+
+			String query3 = "select nullif(m.name, '관리자') from Member m";
+			// s = 관리자2
+
+			List<String> result1 = em.createQuery(query3, String.class)
 				.getResultList();
 
-			System.out.println("result.size() = " + result.size());
-			// result.size() = 10
-
-			for (Member member : result) {
-				System.out.println("member = " + member);
+			for (String s : result1) {
+				System.out.println("s = " + s);
 			}
-			/*
-			member = Member{id=99, name='member98', age=98}
-			member = Member{id=98, name='member97', age=97}
-			member = Member{id=97, name='member96', age=96}
-			member = Member{id=96, name='member95', age=95}
-			member = Member{id=95, name='member94', age=94}
-			member = Member{id=94, name='member93', age=93}
-			member = Member{id=93, name='member92', age=92}
-			member = Member{id=92, name='member91', age=91}
-			member = Member{id=91, name='member90', age=90}
-			member = Member{id=90, name='member89', age=89}
-			 */
 
 			tx.commit();
 		} catch (Exception e) {
