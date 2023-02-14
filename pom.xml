@@ -17,8 +17,8 @@
         <!-- JPA 하이버네이트 -->
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <version>5.4.13.Final</version>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.4.31.Final</version>
         </dependency>
         <!-- H2 데이터베이스 -->
         <dependency>
